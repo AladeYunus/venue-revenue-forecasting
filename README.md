@@ -66,3 +66,9 @@ Open `notebooks/01_eda.ipynb` in Jupyter, VS Code or another notebook tool.
 
 Possible extensions include adding more models, improving feature engineering, simulating more venues, creating a small dashboard or comparing forecasts by venue and season.
 
+### 5. Generate future forecasts
+
+After training the model, you can create forecasts for the next few weeks:
+
+```bash
+python src/forecast_future.py
