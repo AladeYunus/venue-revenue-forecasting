@@ -4,16 +4,22 @@ import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_absolute_error, mean_squared_error
+import joblib
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 RAW_DIR = PROJECT_ROOT / "data" / "raw"
 MODEL_DIR = PROJECT_ROOT / "models"
+OUTPUT_DIR = PROJECT_ROOT / "data" / "processed"
+
 MODEL_DIR.mkdir(exist_ok=True)
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
 
 def load_data() -> pd.DataFrame:
     path = RAW_DIR / "venue_weekly_data.csv"
     df = pd.read_csv(path, parse_dates=["date"])
     return df
+
 
 def add_features(df: pd.DataFrame) -> pd.DataFrame:
     df = df.sort_values(["venue_id", "date"])
@@ -34,6 +40,28 @@ def add_features(df: pd.DataFrame) -> pd.DataFrame:
     )
 
     return df
+
+
+def add_staffing_suggestion(df_results: pd.DataFrame) -> pd.DataFrame:
+    """
+    Simple staffing rule of thumb:
+    - base: 1 staff hour per £500 of forecast revenue
+    - enforce a minimum
+    - create a small range (min / max) for flexibility
+    """
+
+    target_revenue_per_hour = 500  # £ per staff hour (arbitrary but reasonable)
+    min_hours = 20
+
+    suggested_hours = df_results["predicted_revenue"] / target_revenue_per_hour
+    suggested_hours = suggested_hours.clip(lower=min_hours)
+
+    df_results["suggested_staff_hours_centre"] = suggested_hours.round(1)
+    df_results["suggested_staff_hours_min"] = (suggested_hours * 0.9).round(1)
+    df_results["suggested_staff_hours_max"] = (suggested_hours * 1.1).round(1)
+
+    return df_results
+
 
 def train_and_evaluate(df: pd.DataFrame):
     # drop rows where lag features are missing
@@ -56,7 +84,7 @@ def train_and_evaluate(df: pd.DataFrame):
     X = df[feature_cols]
     y = df[target_col]
 
-    # simple time-based split: last 20% weeks as test
+    # simple time-based split: last 20% of rows (by date) as test
     df_sorted = df.sort_values("date")
     split_index = int(len(df_sorted) * 0.8)
 
@@ -77,28 +105,59 @@ def train_and_evaluate(df: pd.DataFrame):
     y_pred = model.predict(X_test)
 
     mae = mean_absolute_error(y_test, y_pred)
-    rmse = mean_squared_error(y_test, y_pred) ** 0.5
+    rmse = mean_squared_error(y_test, y_pred) ** 0.5  # manual square root
     mape = np.mean(np.abs((y_test - y_pred) / (y_test + 1e-6))) * 100
 
     print(f"Test MAE:  {mae:.2f}")
     print(f"Test RMSE: {rmse:.2f}")
     print(f"Test MAPE: {mape:.2f}%")
 
-    # show feature importance
-    importance = (
+    # feature importance
+    feature_importance = (
         pd.DataFrame(
             {"feature": feature_cols, "importance": model.feature_importances_}
         )
         .sort_values("importance", ascending=False)
+        .reset_index(drop=True)
     )
+
     print("\nFeature importance:")
-    print(importance)
+    print(feature_importance)
+
+    # build a results frame for the test period
+    results = df.loc[test_idx, ["date", "venue_id", "revenue", "staff_hours"]].copy()
+    results["predicted_revenue"] = y_pred
+
+    results = add_staffing_suggestion(results)
+
+    return model, results, feature_importance, {"mae": mae, "rmse": rmse, "mape": mape}
+
 
 def main():
     df = load_data()
     df = add_features(df)
-    train_and_evaluate(df)
+
+    model, results, feature_importance, metrics = train_and_evaluate(df)
+
+    # save model
+    model_path = MODEL_DIR / "rf_venue_revenue.joblib"
+    joblib.dump(model, model_path)
+    print(f"\nSaved model to: {model_path}")
+
+    # save test predictions with staffing suggestion
+    predictions_path = OUTPUT_DIR / "test_predictions_with_staffing.csv"
+    results.to_csv(predictions_path, index=False)
+    print(f"Saved test predictions to: {predictions_path}")
+
+    # save feature importance
+    fi_path = OUTPUT_DIR / "feature_importance.csv"
+    feature_importance.to_csv(fi_path, index=False)
+    print(f"Saved feature importance to: {fi_path}")
+
+    print("\nMetrics:")
+    for k, v in metrics.items():
+        print(f"{k.upper()}: {v:.2f}")
+
 
 if __name__ == "__main__":
     main()
-
