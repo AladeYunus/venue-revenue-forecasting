@@ -1,8 +1,3 @@
-Here you go — no extra explanation, no code fences splitting sections.
-Just one clean block you can copy straight into VS Code and paste into your README.md.
-
----
-
 # Venue Revenue Forecasting & Staffing Support
 
 This project builds a weekly revenue forecasting model for a set of venues using synthetic data. It follows a simple end-to-end workflow: generate data, explore it, create features, train a model and review the results. The aim is to show how data science can help with planning and highlight which factors have the strongest influence on revenue.
