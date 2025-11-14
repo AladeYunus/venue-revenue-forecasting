@@ -1,74 +1,126 @@
-# Venue Revenue Forecasting & Staffing Support
+# Venue revenue forecasting & staffing support
 
-This project builds a weekly revenue forecasting model for a set of venues using synthetic data. It follows a simple end-to-end workflow: generate data, explore it, create features, train a model and review the results. The aim is to show how data science can help with planning and highlight which factors have the strongest influence on revenue.
+This project builds a weekly revenue forecasting model for a group of venues using synthetic but realistic data. It covers data creation, exploration, model training, evaluation, future forecasting and a simple staffing guide based on the predictions.
 
-The work mirrors tasks expected in a junior data science role: cleaning data, exploring patterns, creating and testing models and explaining the findings clearly.
+An insights notebook and a Tableau Public dashboard are included to help present the findings in a clear, practical way.
 
 ## Project structure
 
 ```
 venue-revenue-forecasting/
 ├── data/
-│   └── raw/
+│   ├── raw/
+│   └── processed/
+├── models/
 ├── notebooks/
-│   └── 01_eda.ipynb
+│   ├── 01_eda.ipynb
+│   └── 02_insights.ipynb
+├── reports/
+│   └── summary.md
 ├── src/
 │   ├── make_dataset.py
-│   └── train_basic_model.py
-├── models/
+│   ├── train_basic_model.py
+│   └── forecast_future.py
 ├── requirements.txt
 └── README.md
 ```
 
 ## What the project does
 
-### Synthetic data generation
+### Synthetic data
 
-`make_dataset.py` creates a weekly dataset for several venues. The data includes revenue, staff hours, weather score, local events, promotions, opening hours and calendar details. The synthetic data behaves in a realistic way, making it suitable for modelling and exploration.
+`make_dataset.py` creates weekly data for several venues, including revenue, staff hours, weather, events, promotions and calendar fields.
 
-### Exploratory work
+### Exploration
 
-`notebooks/01_eda.ipynb` looks at patterns in the data, including revenue over time, differences between venues and the effect of promotions, events and weather. Charts and summaries help build a picture of what drives demand.
+`01_eda.ipynb` explores the structure of the data and looks at simple trends across venues and time.
 
 ### Model training
 
-`train_basic_model.py` adds features such as lagged revenue, moving averages and calendar information. A random forest model is then trained to predict weekly revenue. Results include MAE, RMSE, MAPE and a feature importance table, which shows which inputs matter most.
+`train_basic_model.py` prepares features such as lagged revenue and short moving averages, then trains a random forest model to predict weekly revenue.
+It prints performance metrics and saves the trained model, test predictions and feature importance.
+
+### Insights
+
+`02_insights.ipynb` focuses on simple, clear findings such as:
+
+* how promotions and events relate to revenue
+* which venues show more variation
+* how model accuracy changes across venues
+* where staffing differs from the suggested levels
+* future predicted revenue and suggested staff hours
+
+### Future forecasts
+
+`forecast_future.py` rolls the model forward to create a 12-week forecast for every venue, along with a suggested staffing range based on predicted revenue.
+
+### Tableau dashboard
+
+A Tableau Public dashboard can be created using the three CSV files:
+
+* `venue_weekly_data.csv`
+* `test_predictions_with_staffing.csv`
+* `future_forecasts_with_staffing.csv`
+
+The dashboard includes:
+
+1. Revenue trends
+2. Actual vs predicted revenue
+3. Staff comparisons
+4. Future forecasts
+
+The dashboard can be shared publicly through Tableau Public.
 
 ## How to run the project
 
-### 1. Install dependencies
+### 1. Create and activate a virtual environment
 
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
 ```
+
+### 2. Install dependencies
+
+```bash
 pip install -r requirements.txt
 ```
 
-### 2. Create the dataset
+### 3. Generate the dataset
 
-```
+```bash
 python src/make_dataset.py
 ```
 
-This saves a CSV file to `data/raw/venue_weekly_data.csv`.
+### 4. Train the model
 
-### 3. Train the model
-
-```
+```bash
 python src/train_basic_model.py
 ```
 
-This prints test metrics and feature importance in the terminal.
+This saves:
 
-### 4. Explore the data
+* `models/rf_venue_revenue.joblib`
+* `data/processed/test_predictions_with_staffing.csv`
+* `data/processed/feature_importance.csv`
 
-Open `notebooks/01_eda.ipynb` in Jupyter, VS Code or another notebook tool.
-
-## Next steps
-
-Possible extensions include adding more models, improving feature engineering, simulating more venues, creating a small dashboard or comparing forecasts by venue and season.
-
-### 5. Generate future forecasts
-
-After training the model, you can create forecasts for the next few weeks:
+### 5. Produce future forecasts
 
 ```bash
 python src/forecast_future.py
+```
+
+This saves:
+
+* `data/processed/future_forecasts_with_staffing.csv`
+
+### 6. Explore results in notebooks
+
+Open:
+
+* `notebooks/01_eda.ipynb`
+* `notebooks/02_insights.ipynb`
+
+## Next steps
+
+Possible improvements include adding further models, estimating uncertainty, creating more detailed staffing rules or connecting the outputs to a small web app.
