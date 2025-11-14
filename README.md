@@ -1,6 +1,6 @@
 # Venue revenue forecasting model lab
 
-This project builds a weekly revenue forecasting model for a group of venues using synthetic but realistic data. It covers data creation, exploration, model training, evaluation, future forecasting and a simple staffing guide based on the predictions.
+This project shows how weekly venue data can be used to build a practical forecasting model. It includes data creation, feature work, model training, evaluation, future predictions and a simple staffing guide linked to the forecasts. The notebooks and dashboard show the output in a clear, easy-to-read way.
 
 An insights notebook and a Tableau Public dashboard are included to help present the findings in a clear, practical way.
 
@@ -124,3 +124,10 @@ Open:
 ## Next steps
 
 Possible improvements include adding further models, estimating uncertainty, creating more detailed staffing rules or connecting the outputs to a small web app.
+
+## What this shows
+- I can build and work with structured datasets
+- I can design features and train a forecasting model
+- I can explain model output clearly
+- I can present findings through notebooks and simple dashboards
+- I can link predictions to real decisions, such as staffing levels
