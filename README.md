@@ -1,4 +1,4 @@
-# Staffing forecasting model lab
+# Venue revenue forecasting model lab
 
 This project builds a weekly revenue forecasting model for a group of venues using synthetic but realistic data. It covers data creation, exploration, model training, evaluation, future forecasting and a simple staffing guide based on the predictions.
 
